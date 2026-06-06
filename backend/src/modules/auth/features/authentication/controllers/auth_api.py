@@ -1,6 +1,6 @@
 from typing import Any
 
-from litestar import Controller, Request, post
+from litestar import Controller, Request, post, get
 
 from litestar.di import Provide
 from litestar.exceptions import HTTPException
@@ -51,3 +51,22 @@ class AuthAPI(Controller):
             id_user=user_session_schema.id_user,
             username=user_session_schema.username
         )
+
+
+    @get("/me")
+    async def me(self, request: Request[Any, Any, Any]) -> LoginResponseDTO:
+        user_session: Any | None = request.session.get("username")
+
+        if not user_session:
+            raise HTTPException(detail="Not authenticated", status_code=HTTP_401_UNAUTHORIZED)
+        
+        return LoginResponseDTO(
+            id_user=request.session.get("id_user"), # type: ignore
+            username=request.session.get("username"), # type: ignore
+        )
+
+
+    @post("/logout")
+    async def logout(self, request: Request[Any, Any, Any]) -> None:
+        request.session.clear()
+        return None

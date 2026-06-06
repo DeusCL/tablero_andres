@@ -16,10 +16,14 @@ source .venv/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
+---
+
 ### 2. Clonar `.env.example`
 ```sh
 sudo cp .env.example .env
 ```
+
+---
 
 ### 3. Creación de la BDD
 
@@ -55,6 +59,8 @@ DB_PASSWORD=tu_contraseña_segura
 DB_NAME=rdc_db
 ```
 
+---
+
 ### 5. Crear usuario
 
 Ejecutar script de creación de usuario:
@@ -62,4 +68,49 @@ Ejecutar script de creación de usuario:
 ```sh
 python3 -m src.scripts.seed_users
 ```
+
+---
+
+### 6. Configurar Frontend (Nginx)
+
+Para que el SPA funcione correctamente con rutas limpias y evitar errores 404 al recargar, se debe configurar Nginx en tu máquina local:
+
+1. **Crear archivo de configuración**:
+   ```sh
+   sudo nano /etc/nginx/sites-available/tablero-andres.conf
+   ```
+
+2. **Pegar la siguiente configuración** (ajusta la ruta de `root` a tu carpeta actual):
+   ```nginx
+   server {
+       listen 8080;
+       server_name localhost;
+
+       # ¡IMPORTANTE! Ajusta esta ruta a tu directorio real
+       root /home/nolan/hobbies/tablero_andres/frontend;
+       index index.html;
+
+       location / {
+           try_files $uri $uri/ /index.html;
+       }
+
+       include /etc/nginx/mime.types;
+   }
+   ```
+
+3. **Habilitar el sitio y reiniciar Nginx**:
+   ```sh
+   # Crear el enlace simbólico
+   sudo ln -s /etc/nginx/sites-available/tablero-andres.conf /etc/nginx/sites-enabled/
+
+   # Verificar sintaxis
+   sudo nginx -t
+
+   # Reiniciar servicio
+   sudo systemctl restart nginx
+   ```
+
+4. **Acceso**:
+   El frontend estará disponible en `http://localhost:8080`
+
 

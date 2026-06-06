@@ -24,6 +24,7 @@ cors_config = CORSConfig(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept"],
     expose_headers=["*"],
+    allow_credentials=True,
     max_age=600,
 )
 
