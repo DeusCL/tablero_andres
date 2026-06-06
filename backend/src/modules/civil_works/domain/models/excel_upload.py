@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -33,7 +34,7 @@ class ExcelUpload(Base):
     file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     file_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
-    uploaded_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=now, server_default=func.now(), index=True)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, server_default=func.now(), index=True)
 
     civil_works: Mapped[list["CivilWork"]] = relationship(
         "CivilWork", back_populates="upload", cascade="all, delete-orphan"
