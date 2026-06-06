@@ -6,12 +6,15 @@ export async function request(path, options = {}) {
     
     // Configuración por defecto para JSON y credenciales (sesiones)
     const defaultOptions = {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
+        headers: {},
         credentials: 'include', // Necesario para enviar/recibir cookies de sesión
     };
+
+    // Si el body no es FormData, asumimos JSON
+    if (!(options.body instanceof FormData)) {
+        defaultOptions.headers['Content-Type'] = 'application/json';
+        defaultOptions.headers['Accept'] = 'application/json';
+    }
 
     const mergedOptions = {
         ...defaultOptions,
@@ -22,7 +25,7 @@ export async function request(path, options = {}) {
         },
     };
 
-    if (options.body && typeof options.body === 'object') {
+    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
         mergedOptions.body = JSON.stringify(options.body);
     }
 
