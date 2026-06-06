@@ -19,6 +19,8 @@ from src.modules.civil_works.features.importation.repositories.importation_repos
 
 logger = get_logger(__name__)
 
+MAX_EMPTY_STREAK = 10  # Detenerse tras 10 filas vacías o sin N° Trabajo
+
 
 class ImportationService:
     def __init__(self, repo: ImportationRepository) -> None:
@@ -75,7 +77,8 @@ class ImportationService:
 
     def _sync_process_excel(self, file_path: str) -> list[dict[str, Any]]:
         """Procesamiento sincrónico de Excel para ejecutar en un hilo separado."""
-        workbook: Workbook = openpyxl.load_workbook(file_path, data_only=True)
+        # Usar read_only=True para mejorar significativamente el rendimiento y memoria
+        workbook: Workbook = openpyxl.load_workbook(file_path, data_only=True, read_only=True)
         sheet: Worksheet = cast(Worksheet, workbook.active)
 
         if sheet is None:
@@ -109,9 +112,23 @@ class ImportationService:
 
         logger.debug("Loading excel rows...")
         civil_works_data: list[dict[str, Any]] = []
+
+        empty_streak = 0
+
         for row_idx, row in enumerate(sheet.iter_rows(min_row=header_row_idx + 1, values_only=True), start=header_row_idx + 1):
-            if all(val is None for val in row): continue
-            if row[mapping["numero_trabajo"]] is None: continue
+            # Si la fila es nula o falta el número de trabajo, aumentamos la racha
+
+            if all(val is None for val in row) or row[mapping["numero_trabajo"]] is None:
+                empty_streak += 1
+
+                if empty_streak >= MAX_EMPTY_STREAK:
+                    logger.debug("Empty streak reached, stopping", row_idx=row_idx)
+                    break
+
+                continue
+
+            # Reiniciar racha si hay datos válidos
+            empty_streak = 0
 
             if row_idx%100 == 0:
                 logger.debug("Loading progress", row_idx=row_idx)

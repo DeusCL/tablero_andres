@@ -4,6 +4,7 @@ __pycache__/
 .tmp
 .env.seed
 *.pyc
+backend/uploads
 
 .hypothesis/
 .vscode/settings.json
