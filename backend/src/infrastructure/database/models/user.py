@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -6,9 +8,12 @@ from sqlalchemy import (
     Boolean,
 )
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.infrastructure.database.models.base import Base
+
+if TYPE_CHECKING:
+    from src.modules.civil_works.domain.models.excel_upload import ExcelUpload
 
 
 
@@ -25,3 +30,5 @@ class User(Base):
         nullable=True,
         default=None,
     )
+
+    uploads: Mapped[list["ExcelUpload"]] = relationship("ExcelUpload", back_populates="user")
