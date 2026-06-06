@@ -1,0 +1,10 @@
+[project]
+name = "rdc"
+version = "0.0.1-alpha"
+description = "Excel Visualization Software for RDC Company"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [
+    { name = "NolanAI Team", email = "dev@nolanai.chile" }
+]
