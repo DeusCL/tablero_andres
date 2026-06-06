@@ -42,3 +42,4 @@ SQLAlchemy==2.0.50
 structlog==25.5.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
+websockets==16.0

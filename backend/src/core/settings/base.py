@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     db_max_pool_size: int
     db_max_overflow: int
 
+    # Channels
+    pubsub_url: str
+    channels_backend: str
+    redis_prefix: str
+
 
     @property
     def url_db(self) -> str:
