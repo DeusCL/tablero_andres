@@ -89,7 +89,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @contextmanager
-def get_sync_db_session() -> Generator[Session, None]:
+def get_sync_db_session() -> Generator[Session, None, None]:
     session: Session = SyncSessionLocal()
 
     try:
