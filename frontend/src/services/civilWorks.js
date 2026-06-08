@@ -9,5 +9,9 @@ export const CivilWorksService = {
             method: 'POST',
             body: formData
         });
+    },
+
+    async getDashboardData() {
+        return await request('/analytics/dashboard');
     }
 };

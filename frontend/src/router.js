@@ -71,4 +71,13 @@ async function handleLocation() {
     app.innerHTML = '';
     const viewElement = document.createElement(route.tag);
     app.appendChild(viewElement);
+
+    // Actualizar navbar para reflejar cambios de autenticación/visibilidad
+    const navbar = document.querySelector('app-navbar');
+    if (navbar && typeof navbar.render === 'function') {
+        navbar.render();
+        if (typeof navbar.setupEventListeners === 'function') {
+            navbar.setupEventListeners();
+        }
+    }
 }

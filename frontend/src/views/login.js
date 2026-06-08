@@ -14,19 +14,19 @@ export class LoginView extends HTMLElement {
 
     render() {
         this.innerHTML = `
-            <div class="view-container">
+            <div class="view-container centered">
                 <h1>Iniciar Sesión</h1>
-                <form id="login-form">
-                    <div style="margin-bottom: 1rem;">
+                <form id="login-form" style="width: 100%;">
+                    <div style="margin-bottom: 1rem; text-align: left;">
                         <label>Usuario</label><br>
-                        <input type="text" id="username" required>
+                        <input type="text" id="username" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-input); color: white;" required>
                     </div>
-                    <div style="margin-bottom: 1rem;">
+                    <div style="margin-bottom: 1rem; text-align: left;">
                         <label>Contraseña</label><br>
-                        <input type="password" id="password" required>
+                        <input type="password" id="password" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-input); color: white;" required>
                     </div>
-                    <div id="error-message" style="color: #ef4444; margin-bottom: 1rem; display: none;"></div>
-                    <button type="submit" id="submit-btn">Entrar</button>
+                    <div id="error-message" style="color: var(--color-pink); margin-bottom: 1rem; display: none;"></div>
+                    <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%;">Entrar</button>
                 </form>
             </div>
         `;

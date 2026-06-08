@@ -23,16 +23,20 @@ export class AppNavbar extends HTMLElement {
     }
 
     render() {
+        const isAuthenticated = AuthService.isAuthenticated();
+        
         this.innerHTML = `
             <nav>
                 <div class="logo">
                     <strong>Tablero Andrés</strong>
                 </div>
+                ${isAuthenticated ? `
                 <div class="nav-links">
                     <a href="/dashboard" data-link>Dashboard</a>
                     <a href="/upload" data-link>Subir Excel</a>
                     <a href="#" id="logout-link">Cerrar Sesión</a>
                 </div>
+                ` : ''}
             </nav>
         `;
     }
