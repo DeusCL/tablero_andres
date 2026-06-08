@@ -11,11 +11,11 @@ class ImportationRepository:
         self.db = db
 
 
-    async def delete_previous_uploads(self, user_id: int) -> None:
+    async def delete_previous_uploads(self) -> None:
         """Borra todas las cargas previas del usuario y sus datos asociados de forma explícita."""
 
         # Identificar las cargas del usuario
-        upload_ids_stmt: Select[tuple[int]] = select(ExcelUpload.id).where(ExcelUpload.id_user == user_id)
+        upload_ids_stmt: Select[tuple[int]] = select(ExcelUpload.id)
         result: Result[tuple[int]] = await self.db.execute(upload_ids_stmt)
         upload_ids: Sequence[int] = result.scalars().all()
 

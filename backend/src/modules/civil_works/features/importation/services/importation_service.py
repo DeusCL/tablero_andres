@@ -52,7 +52,7 @@ class ImportationService:
             logger.debug("Deleting previous uploads...")
 
             # Operación en BD (I/O asíncrono)
-            await self.repo.delete_previous_uploads(user_id)
+            await self.repo.delete_previous_uploads()
 
 
             logger.debug("Adding civil works to upload...")
