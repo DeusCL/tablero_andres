@@ -216,10 +216,12 @@ class ImportationService:
             return value
 
         if isinstance(value, str):
+            value_clean: str = value.strip()
+
             try:
-                return datetime.strptime(value, "%Y-%m-%d").date()
-            except ValueError:
-                return datetime.strptime(value, "%d/%m/%Y").date()
+                return datetime.strptime(value_clean, "%d-%m-%Y").date()
+            except ValueError as e:
+                raise Exception(f"Formato de fecha inválido: {value_clean}")
 
         raise ValueError(f"Formato de fecha inválido: {value}")
 
