@@ -61,7 +61,17 @@ DB_NAME=rdc_db
 
 ---
 
-### 5. Crear usuario
+### 5. Realizar migraciones
+
+Crear tablas ejecutando el siguiente comando:
+
+```sh
+alembic upgrade head
+```
+
+---
+
+### 6. Crear usuario
 
 Ejecutar script de creación de usuario:
 
@@ -71,7 +81,7 @@ python3 -m src.scripts.seed_users
 
 ---
 
-### 6. Configurar Frontend (Nginx)
+### 7. Configurar Frontend (Nginx)
 
 Para que el SPA funcione correctamente con rutas limpias y evitar errores 404 al recargar, se debe configurar Nginx en tu máquina local:
 
