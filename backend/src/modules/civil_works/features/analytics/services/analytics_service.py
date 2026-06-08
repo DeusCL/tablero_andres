@@ -21,9 +21,9 @@ class AnalyticsService:
             result.append(CivilWorkAnalyticsSchema(
                 id=cw.id,
                 numero_trabajo=cw.numero_trabajo,
-                fecha=cw.fecha.isoformat(),
-                year=cw.fecha.year,
-                month=cw.fecha.month,
+                fecha=cw.fecha.isoformat() if cw.fecha else "S/F",
+                year=cw.fecha.year if cw.fecha else "S/F",
+                month=cw.fecha.month if cw.fecha else "S/F",
                 detalle=cw.detalle_trabajos or "",
                 tipo=cw.tipo_trabajo,
                 edificio=cw.edificio_instalacion or "Sin Edificio",

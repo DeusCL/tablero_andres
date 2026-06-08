@@ -32,7 +32,7 @@ class CivilWork(Base):
     # Identificadores del Excel
     numero_trabajo: Mapped[int] = mapped_column(Integer, index=True)
     semana: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    fecha: Mapped[date] = mapped_column(Date, index=True)
+    fecha: Mapped[date | None] = mapped_column(Date, index=True, nullable=True)
 
     # Datos en texto libre
     contratista: Mapped[str] = mapped_column(String(150), index=True)

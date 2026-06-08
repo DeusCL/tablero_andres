@@ -6,8 +6,8 @@ class CivilWorkAnalyticsSchema(BaseModel):
     id: int
     numero_trabajo: int
     fecha: str
-    year: int
-    month: int
+    year: int | str
+    month: int | str
     detalle: str
     tipo: str
     edificio: str

@@ -127,12 +127,6 @@ class ImportationService:
 
                 continue
 
-            # Omitir registros sin fecha
-            fecha_val = row[mapping["fecha"]]
-            if fecha_val is None or (isinstance(fecha_val, str) and not fecha_val.strip()):
-                logger.debug("Skipping row without date", row_idx=row_idx)
-                continue
-
             # Reiniciar racha si hay datos válidos
             empty_streak = 0
 
@@ -214,7 +208,10 @@ class ImportationService:
             raise ValueError(f"Error en fila {row_idx}: {str(e)}")
 
 
-    def _to_date(self, value: datetime | date | str) -> date:
+    def _to_date(self, value: datetime | date | str) -> date | None:
+        if value is None:
+            return None
+
         if isinstance(value, datetime):
             return value.date()
 
@@ -223,11 +220,15 @@ class ImportationService:
 
         if isinstance(value, str):
             value_clean: str = value.strip()
+            if not value_clean:
+                return None
 
             try:
                 return datetime.strptime(value_clean, "%d-%m-%Y").date()
             except ValueError as e:
-                raise Exception(f"Formato de fecha inválido: {value_clean}")
+                # En vez de fallar, podemos loguear y devolver None si el formato es basura
+                logger.warning(f"Formato de fecha inválido en excel: {value_clean}")
+                return None
 
-        raise ValueError(f"Formato de fecha inválido: {value}")
+        return None
 

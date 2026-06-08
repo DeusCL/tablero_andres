@@ -411,7 +411,9 @@ export class DashboardView extends HTMLElement {
         const monthsMap = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const categories = sortedKeys.map(k => {
             const [y, m] = k.split('-');
-            return `${monthsMap[parseInt(m)-1]} ${y}`;
+            if (y === "S/F") return "S/F";
+            const monthIdx = parseInt(m) - 1;
+            return `${monthsMap[monthIdx] || 'S/I'} ${y}`;
         });
 
         this.charts['chart-evolucion'].setOption({
