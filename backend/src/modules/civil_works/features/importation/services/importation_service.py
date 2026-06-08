@@ -127,6 +127,12 @@ class ImportationService:
 
                 continue
 
+            # Omitir registros sin fecha
+            fecha_val = row[mapping["fecha"]]
+            if fecha_val is None or (isinstance(fecha_val, str) and not fecha_val.strip()):
+                logger.debug("Skipping row without date", row_idx=row_idx)
+                continue
+
             # Reiniciar racha si hay datos válidos
             empty_streak = 0
 
