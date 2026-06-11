@@ -40,10 +40,22 @@ export class DashboardView extends HTMLElement {
         this.renderLayout();
         await this.loadData();
         window.addEventListener('resize', this.handleResize.bind(this));
+        
+        // ResizeObserver to resize charts in real-time during transition
+        this.resizeObserver = new ResizeObserver(() => {
+            this.handleResize();
+        });
+        const mainContent = this.querySelector('.main-content');
+        if (mainContent) {
+            this.resizeObserver.observe(mainContent);
+        }
     }
 
     disconnectedCallback() {
         window.removeEventListener('resize', this.handleResize.bind(this));
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
         Object.values(this.charts).forEach(chart => chart.dispose());
     }
 
@@ -105,9 +117,6 @@ export class DashboardView extends HTMLElement {
         this.innerHTML = `
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <div class="logo-container">
-                        <img src="./assets/img/logo_rdc.png" alt="Logotipo RDC" class="logo-img">
-                    </div>
                     <div class="sidebar-title">Filtros de Análisis</div>
                 </div>
                 <div class="sidebar-content">

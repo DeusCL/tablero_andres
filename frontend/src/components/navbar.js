@@ -20,15 +20,37 @@ export class AppNavbar extends HTMLElement {
                 await AuthService.logout();
             });
         }
+
+        const toggleBtn = this.querySelector('#sidebar-toggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+                // Trigger immediate resize to adapt elements, and another one after the transition finishes
+                window.dispatchEvent(new Event('resize'));
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            });
+        }
     }
 
     render() {
         const isAuthenticated = AuthService.isAuthenticated();
+        const showToggleBtn = isAuthenticated && window.location.pathname === '/dashboard';
         
         this.innerHTML = `
             <nav>
-                <div class="logo">
-                    <strong>Tablero Andrés</strong>
+                <div class="nav-left">
+                    ${showToggleBtn ? `
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Colapsar panel de navegación">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                        </svg>
+                    </button>
+                    ` : ''}
+                    <div class="logo">
+                        <img src="./assets/img/logo_rdc.png" alt="Logotipo RDC" class="logo-img-navbar">
+                    </div>
                 </div>
                 ${isAuthenticated ? `
                 <div class="nav-links">
