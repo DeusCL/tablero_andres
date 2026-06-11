@@ -297,11 +297,13 @@ export class DashboardView extends HTMLElement {
     }
 
     initFilters() {
-        const years = [...new Set(this.state.data.map(d => d.year))].sort((a, b) => b - a);
-        const tipos = [...new Set(this.state.data.map(d => d.tipo))].sort();
-        const edificios = [...new Set(this.state.data.map(d => d.edificio))].sort();
-        const hhs = [...new Set(this.state.data.map(d => d.hh))].sort();
-        const zonals = [...new Set(this.state.data.map(d => d.zonal))].sort();
+        const alphanumericSort = (a, b) => String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+
+        const years = [...new Set(this.state.data.map(d => d.year))].sort(alphanumericSort);
+        const tipos = [...new Set(this.state.data.map(d => d.tipo))].sort(alphanumericSort);
+        const edificios = [...new Set(this.state.data.map(d => d.edificio))].sort(alphanumericSort);
+        const hhs = [...new Set(this.state.data.map(d => d.hh))].sort(alphanumericSort);
+        const zonals = [...new Set(this.state.data.map(d => d.zonal))].sort(alphanumericSort);
 
         this.populateCheckboxFilter('filter-year', years, 'selectedYears');
         this.populateCheckboxFilter('filter-tipo', tipos, 'selectedTipos');
