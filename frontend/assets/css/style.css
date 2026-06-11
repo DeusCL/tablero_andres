@@ -443,14 +443,19 @@ dashboard-view {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 1rem;
 }
 
 .search-container {
   position: relative;
-  max-width: 320px;
+  flex-grow: 1;
   width: 100%;
+}
+
+.table-meta {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -476,12 +481,14 @@ dashboard-view {
   overflow-x: auto;
   border: 1px solid var(--border-color);
   border-radius: 6px;
+  height: 531px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  table-layout: fixed;
 }
 
 thead {
@@ -489,17 +496,26 @@ thead {
 }
 
 th {
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.3rem;
   color: var(--color-cyan);
   font-size: 0.75rem;
   text-transform: uppercase;
   cursor: pointer;
+  white-space: nowrap;
+  word-break: keep-all;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.85rem;
+  padding: 0.9rem 0.3rem;
+  border-bottom: 1p0x solid var(--border-color);
+  font-size: clamp(0.68rem, 0.8vw, 0.85rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 tr:hover {
@@ -524,6 +540,7 @@ tr:hover {
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
   cursor: pointer;
+  width: 53px;
 }
 
 .page-btn.active {

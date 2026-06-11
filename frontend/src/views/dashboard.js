@@ -230,11 +230,23 @@ export class DashboardView extends HTMLElement {
                     </div>
                     <div class="table-wrapper">
                         <table>
+                            <colgroup>
+                                <col style="width: 6.06%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 24.24%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 9.09%;">
+                                <col style="width: 6.06%;">
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th id="th-numero_trabajo">Nº Trab</th>
                                     <th id="th-fecha">Fecha</th>
-                                    <th id="th-detalle" style="width: 30%">Detalle</th>
+                                    <th id="th-detalle">Detalle</th>
                                     <th id="th-tipo">Tipo</th>
                                     <th id="th-edificio">Edificio</th>
                                     <th id="th-hh">Encargado</th>
@@ -299,6 +311,9 @@ export class DashboardView extends HTMLElement {
                         this.state.sortOrder = 'asc';
                     }
                     this.renderTable();
+                });
+                el.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
                 });
             }
         });
@@ -707,7 +722,24 @@ export class DashboardView extends HTMLElement {
         let data = [...this.state.filteredData];
 
         if (search) {
-            data = data.filter(d => d.detalle.toLowerCase().includes(search));
+            data = data.filter(d => {
+                const searchLower = search.toLowerCase();
+                const detalle = (d.detalle || '').toLowerCase();
+                const fecha = (d.fecha || '').toLowerCase();
+                const zonal = (d.zonal || '').toLowerCase();
+                const tipo = (d.tipo || '').toLowerCase();
+                const edificio = (d.edificio || '').toLowerCase();
+                const hh = (d.hh || '').toLowerCase();
+                const numTrabajo = String(d.numero_trabajo || '').toLowerCase();
+
+                return detalle.includes(searchLower) ||
+                       fecha.includes(searchLower) ||
+                       zonal.includes(searchLower) ||
+                       tipo.includes(searchLower) ||
+                       edificio.includes(searchLower) ||
+                       hh.includes(searchLower) ||
+                       numTrabajo.includes(searchLower);
+            });
         }
 
         const field = this.state.sortBy;
@@ -718,26 +750,59 @@ export class DashboardView extends HTMLElement {
             return 0;
         });
 
+        // Actualizar indicadores de ordenamiento en las cabeceras
+        const headerLabels = {
+            numero_trabajo: 'Nº Trab',
+            fecha: 'Fecha',
+            detalle: 'Detalle',
+            tipo: 'Tipo',
+            edificio: 'Edificio',
+            hh: 'Encargado',
+            zonal: 'Zonal',
+            monto_neto: 'Monto Neto',
+            margin: 'Margen',
+            rent: 'Rent %'
+        };
+
+        Object.keys(headerLabels).forEach(key => {
+            const th = this.querySelector(`#th-${key}`);
+            if (th) {
+                let html = headerLabels[key];
+                if (key === this.state.sortBy) {
+                    const arrow = this.state.sortOrder === 'asc' ? '▲' : '▼';
+                    html += ` <span style="color: var(--color-pink); font-size: 0.7rem;">${arrow}</span>`;
+                }
+                th.innerHTML = html;
+            }
+        });
+
         const totalFiltered = data.length;
         const totalPages = Math.ceil(totalFiltered / this.state.itemsPerPage) || 1;
         const start = (this.state.currentPage - 1) * this.state.itemsPerPage;
         const paginatedData = data.slice(start, start + this.state.itemsPerPage);
 
+        const table = this.querySelector('table');
         const tbody = this.querySelector('#table-body');
-        tbody.innerHTML = paginatedData.map(d => `
-            <tr>
-                <td>${d.numero_trabajo}</td>
-                <td>${d.fecha}</td>
-                <td>${d.detalle}</td>
-                <td>${d.tipo}</td>
-                <td>${d.edificio}</td>
-                <td>${d.hh}</td>
-                <td>${d.zonal}</td>
-                <td style="text-align: right">${this.formatCurrency(d.monto_neto)}</td>
-                <td style="text-align: right; color: ${d.margin >= 0 ? this.colors.green : this.colors.pink}">${this.formatCurrency(d.margin)}</td>
-                <td style="text-align: right">${this.formatPercent(d.rent)}</td>
-            </tr>
-        `).join('');
+        if (totalFiltered === 0) {
+            if (table) table.style.height = '100%';
+            tbody.innerHTML = `<tr style="height: 100%;"><td colspan="10" style="text-align: center; vertical-align: middle; color: var(--text); font-size: 1rem;">No se encontraron resultados</td></tr>`;
+        } else {
+            if (table) table.style.height = '';
+            tbody.innerHTML = paginatedData.map(d => `
+                <tr>
+                    <td>${d.numero_trabajo}</td>
+                    <td>${d.fecha}</td>
+                    <td>${d.detalle}</td>
+                    <td>${d.tipo}</td>
+                    <td>${d.edificio}</td>
+                    <td>${d.hh}</td>
+                    <td>${d.zonal}</td>
+                    <td style="text-align: right">${this.formatCurrency(d.monto_neto)}</td>
+                    <td style="text-align: right; color: ${d.margin >= 0 ? this.colors.green : this.colors.pink}">${this.formatCurrency(d.margin)}</td>
+                    <td style="text-align: right">${this.formatPercent(d.rent)}</td>
+                </tr>
+            `).join('');
+        }
 
         this.querySelector('#table-count-info').innerHTML = `Mostrando <span>${paginatedData.length}</span> de <span>${totalFiltered}</span> trabajos`;
         this.renderPagination(totalPages);
@@ -746,29 +811,80 @@ export class DashboardView extends HTMLElement {
     renderPagination(totalPages) {
         const container = this.querySelector('#table-pagination');
         container.innerHTML = '';
-        
-        if (totalPages <= 1) {
-            this.querySelector('#table-page-info').innerHTML = '';
-            return;
-        }
 
         this.querySelector('#table-page-info').innerHTML = `Página <span>${this.state.currentPage}</span> de <span>${totalPages}</span>`;
 
-        const maxButtons = 5;
-        let start = Math.max(1, this.state.currentPage - 2);
-        let end = Math.min(totalPages, start + maxButtons - 1);
-        if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
-
-        for (let i = start; i <= end; i++) {
-            const btn = document.createElement('button');
-            btn.className = `page-btn ${i === this.state.currentPage ? 'active' : ''}`;
-            btn.textContent = i;
-            btn.addEventListener('click', () => {
-                this.state.currentPage = i;
+        // Botón Anterior (<)
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.textContent = '<';
+        if (this.state.currentPage === 1) {
+            prevBtn.disabled = true;
+            prevBtn.style.cursor = 'not-allowed';
+            prevBtn.style.opacity = '0.5';
+        } else {
+            prevBtn.addEventListener('click', () => {
+                this.state.currentPage--;
                 this.renderTable();
             });
-            container.appendChild(btn);
         }
+        container.appendChild(prevBtn);
+
+        // Generar las páginas a mostrar
+        const pages = [];
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (this.state.currentPage <= 4) {
+                // Cerca del inicio: 1, 2, 3, 4, 5, ..., totalPages
+                pages.push(1, 2, 3, 4, 5, '...', totalPages);
+            } else if (this.state.currentPage >= totalPages - 3) {
+                // Cerca del final: 1, ..., totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages
+                pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                // Al medio: 1, ..., currentPage - 1, currentPage, currentPage + 1, ..., totalPages
+                pages.push(1, '...', this.state.currentPage - 1, this.state.currentPage, this.state.currentPage + 1, '...', totalPages);
+            }
+        }
+
+        // Renderizar botones de página y elipsis
+        pages.forEach(p => {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn';
+            if (p === '...') {
+                btn.textContent = '...';
+                btn.style.cursor = 'default';
+                btn.disabled = true;
+            } else {
+                btn.textContent = p;
+                if (p === this.state.currentPage) {
+                    btn.classList.add('active');
+                }
+                btn.addEventListener('click', () => {
+                    this.state.currentPage = p;
+                    this.renderTable();
+                });
+            }
+            container.appendChild(btn);
+        });
+
+        // Botón Siguiente (>)
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.textContent = '>';
+        if (this.state.currentPage === totalPages) {
+            nextBtn.disabled = true;
+            nextBtn.style.cursor = 'not-allowed';
+            nextBtn.style.opacity = '0.5';
+        } else {
+            nextBtn.addEventListener('click', () => {
+                this.state.currentPage++;
+                this.renderTable();
+            });
+        }
+        container.appendChild(nextBtn);
     }
 }
 
