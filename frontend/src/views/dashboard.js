@@ -16,12 +16,13 @@ export class DashboardView extends HTMLElement {
             sortBy: 'id',
             sortOrder: 'asc',
             currentPage: 1,
-            itemsPerPage: 10
+            itemsPerPage: 10,
+            showTimelineChart: false
         };
 
         this.colors = {
             bgCard: '#1e1f1c',
-            textMain: '#f8f8f2',
+            textMain: '#ffffff',
             textMuted: '#75715e',
             pink: '#f92672',
             green: '#a6e22e',
@@ -165,27 +166,30 @@ export class DashboardView extends HTMLElement {
                 </section>
 
                 <section class="charts-grid">
-                    <div class="chart-card full-width-chart">
-                        <div class="chart-title">Evolución Temporal de Inversión</div>
+                    <div class="chart-card full-width-chart" style="position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div class="chart-title">Evolución Temporal de Inversión</div>
+                            <button id="btn-toggle-evolucion" class="btn" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); margin-bottom: 0.5rem;">Ver Animado</button>
+                        </div>
                         <div class="chart-body" id="chart-evolucion"></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card chart-span-2">
                         <div class="chart-title">Inversión por Tipo de Trabajo</div>
                         <div class="chart-body" id="chart-tipo"></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card chart-span-4">
                         <div class="chart-title">Inversión vs Margen por Edificio</div>
                         <div class="chart-body" id="chart-edificio-monto"></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card chart-span-3">
                         <div class="chart-title">Cantidad de Trabajos por Edificio</div>
                         <div class="chart-body" id="chart-edificio-trabajos"></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card chart-span-3">
                         <div class="chart-title">Facturación y Margen por Encargado</div>
                         <div class="chart-body" id="chart-encargado"></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card chart-span-3">
                         <div class="chart-title">Inversión por Zona Geográfica</div>
                         <div class="chart-body" id="chart-zonal"></div>
                     </div>
@@ -243,6 +247,16 @@ export class DashboardView extends HTMLElement {
 
     addEventListeners() {
         this.querySelector('#btn-reset').addEventListener('click', () => this.resetFilters());
+        
+        const btnToggle = this.querySelector('#btn-toggle-evolucion');
+        if (btnToggle) {
+            btnToggle.addEventListener('click', () => {
+                this.state.showTimelineChart = !this.state.showTimelineChart;
+                btnToggle.textContent = this.state.showTimelineChart ? 'Ver Estático' : 'Ver Animado';
+                this.updateDashboard();
+            });
+        }
+
         this.querySelector('#table-search').addEventListener('input', (e) => {
             this.state.searchString = e.target.value.toLowerCase();
             this.state.currentPage = 1;
@@ -388,11 +402,97 @@ export class DashboardView extends HTMLElement {
                 borderColor: this.colors.gridLine,
                 textStyle: { color: this.colors.textMain }
             },
-            grid: { top: '15%', left: '3%', right: '4%', bottom: '10%', containLabel: true }
+            grid: { top: '15%', left: '3%', right: '4%', bottom: '15%', containLabel: true }
         };
     }
 
     renderEvolucionTemporal(data) {
+        if (this.state.showTimelineChart) {
+            const years = [...new Set(data.map(d => d.year))].filter(y => y && y !== "S/F").sort((a, b) => a - b);
+            if (years.length === 0) {
+                this.renderStaticEvolucionTemporal(data);
+                return;
+            }
+
+            const monthsMap = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+            const baseOption = {
+                ...this.getCommonOption(),
+                timeline: {
+                    axisType: 'category',
+                    autoPlay: true,
+                    playInterval: 1500,
+                    top: 45,
+                    data: years.map(String),
+                    label: { 
+                        color: '#ffffff',
+                        formatter: (s) => s
+                    },
+                    lineStyle: { color: this.colors.gridLine },
+                    controlStyle: {
+                        lineStyle: { color: '#ffffff' },
+                        itemStyle: { color: '#ffffff' }
+                    }
+                },
+                grid: { top: '35%', left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                legend: { data: ['Inversión Mensual', 'Acumulada'], textStyle: { color: this.colors.textMain } },
+                xAxis: { 
+                    type: 'category', 
+                    data: monthsMap, 
+                    axisLine: { lineStyle: { color: this.colors.gridLine } },
+                    axisLabel: { color: '#ffffff', overflow: 'break', width: 70 }
+                },
+                yAxis: [
+                    { type: 'value', name: 'Mensual', splitLine: { lineStyle: { color: this.colors.gridLine } }, axisLabel: { formatter: (v) => `$${v/1000000}M`, color: '#ffffff' }, nameTextStyle: { color: '#ffffff' } },
+                    { type: 'value', name: 'Acumulado', splitLine: { show: false }, axisLabel: { formatter: (v) => `$${v/1000000}M`, color: '#ffffff' }, nameTextStyle: { color: '#ffffff' } }
+                ],
+                series: [
+                    { name: 'Inversión Mensual', type: 'bar', itemStyle: { color: this.colors.cyan } },
+                    { name: 'Acumulada', type: 'line', yAxisIndex: 1, itemStyle: { color: this.colors.green }, lineStyle: { width: 3 } }
+                ]
+            };
+
+            const options = years.map(year => {
+                const yearData = data.filter(d => d.year === year);
+                
+                const monthlyValues = Array(12).fill(0);
+                yearData.forEach(d => {
+                    if (d.month >= 1 && d.month <= 12) {
+                        monthlyValues[d.month - 1] += d.monto_neto;
+                    }
+                });
+
+                const cumulativeValues = [];
+                let sum = 0;
+                monthlyValues.forEach(val => {
+                    sum += val;
+                    cumulativeValues.push(sum);
+                });
+
+                return {
+                    title: { 
+                        text: `Evolución Inversión - Año ${year}`, 
+                        textStyle: { color: '#ffffff', fontSize: 16 },
+                        top: 5
+                    },
+                    series: [
+                        { data: monthlyValues },
+                        { data: cumulativeValues }
+                    ]
+                };
+            });
+
+            this.charts['chart-evolucion'].setOption({
+                baseOption: baseOption,
+                options: options
+            }, true);
+
+        } else {
+            this.renderStaticEvolucionTemporal(data);
+        }
+    }
+
+    renderStaticEvolucionTemporal(data) {
         const monthly = {};
         data.forEach(d => {
             const key = `${d.year}-${String(d.month).padStart(2, '0')}`;
@@ -419,10 +519,27 @@ export class DashboardView extends HTMLElement {
         this.charts['chart-evolucion'].setOption({
             ...this.getCommonOption(),
             legend: { data: ['Inversión Mensual', 'Acumulada'], textStyle: { color: this.colors.textMain } },
-            xAxis: { type: 'category', data: categories, axisLine: { lineStyle: { color: this.colors.gridLine } } },
+            xAxis: { 
+                type: 'category', 
+                data: categories, 
+                axisLine: { lineStyle: { color: this.colors.gridLine } },
+                axisLabel: { color: '#ffffff', overflow: 'break', width: 70 }
+            },
             yAxis: [
-                { type: 'value', name: 'Mensual', splitLine: { lineStyle: { color: this.colors.gridLine } }, axisLabel: { formatter: (v) => `$${v/1000000}M` } },
-                { type: 'value', name: 'Acumulado', splitLine: { show: false }, axisLabel: { formatter: (v) => `$${v/1000000}M` } }
+                { 
+                    type: 'value', 
+                    name: 'Mensual', 
+                    nameTextStyle: { color: '#ffffff' },
+                    splitLine: { lineStyle: { color: this.colors.gridLine } }, 
+                    axisLabel: { formatter: (v) => `$${v/1000000}M`, color: '#ffffff' } 
+                },
+                { 
+                    type: 'value', 
+                    name: 'Acumulado', 
+                    nameTextStyle: { color: '#ffffff' },
+                    splitLine: { show: false }, 
+                    axisLabel: { formatter: (v) => `$${v/1000000}M`, color: '#ffffff' } 
+                }
             ],
             series: [
                 { name: 'Inversión Mensual', type: 'bar', data: barData, itemStyle: { color: this.colors.cyan } },
@@ -468,8 +585,15 @@ export class DashboardView extends HTMLElement {
         this.charts['chart-edificio-monto'].setOption({
             ...this.getCommonOption(),
             legend: { textStyle: { color: this.colors.textMain } },
-            xAxis: { type: 'category', data: categories, axisLabel: { interval: 0, rotate: 30 } },
-            yAxis: { type: 'value', splitLine: { lineStyle: { color: this.colors.gridLine } } },
+            xAxis: { type: 'category', data: categories, axisLabel: { interval: 0, color: '#ffffff', overflow: 'break', width: 80 } },
+            yAxis: { 
+                type: 'value', 
+                splitLine: { lineStyle: { color: this.colors.gridLine } }, 
+                axisLabel: { 
+                    color: '#ffffff',
+                    formatter: (v) => `$${v/1000000}M`
+                } 
+            },
             series: [
                 { name: 'Inversión', type: 'bar', data: netos, itemStyle: { color: this.colors.cyan } },
                 { name: 'Margen', type: 'bar', data: margins, itemStyle: { color: this.colors.green } }
@@ -486,8 +610,8 @@ export class DashboardView extends HTMLElement {
 
         this.charts['chart-edificio-trabajos'].setOption({
             ...this.getCommonOption(),
-            xAxis: { type: 'value', splitLine: { lineStyle: { color: this.colors.gridLine } } },
-            yAxis: { type: 'category', data: categories.reverse(), axisLabel: { interval: 0 } },
+            xAxis: { type: 'value', splitLine: { lineStyle: { color: this.colors.gridLine } }, axisLabel: { color: '#ffffff' } },
+            yAxis: { type: 'category', data: categories.reverse(), axisLabel: { interval: 0, color: '#ffffff' } },
             series: [{ name: 'Cantidad', type: 'bar', data: counts.reverse(), itemStyle: { color: this.colors.purple } }]
         }, true);
     }
@@ -507,8 +631,15 @@ export class DashboardView extends HTMLElement {
         this.charts['chart-encargado'].setOption({
             ...this.getCommonOption(),
             legend: { textStyle: { color: this.colors.textMain } },
-            xAxis: { type: 'value', splitLine: { lineStyle: { color: this.colors.gridLine } } },
-            yAxis: { type: 'category', data: categories.reverse() },
+            xAxis: { 
+                type: 'value', 
+                splitLine: { lineStyle: { color: this.colors.gridLine } }, 
+                axisLabel: { 
+                    color: '#ffffff',
+                    formatter: (v) => `$${v/1000000}M`
+                } 
+            },
+            yAxis: { type: 'category', data: categories.reverse(), axisLabel: { color: '#ffffff' } },
             series: [
                 { name: 'Facturación', type: 'bar', data: netos.reverse(), itemStyle: { color: this.colors.orange } },
                 { name: 'Margen', type: 'bar', data: margins.reverse(), itemStyle: { color: this.colors.green } }
@@ -524,12 +655,23 @@ export class DashboardView extends HTMLElement {
         this.charts['chart-zonal'].setOption({
             ...this.getCommonOption(),
             tooltip: { trigger: 'item' },
+            legend: { orient: 'horizontal', bottom: 0, textStyle: { color: this.colors.textMain } },
             series: [{
                 name: 'Inversión',
                 type: 'pie',
                 radius: '60%',
                 data: seriesData,
-                itemStyle: { borderRadius: 5 }
+                itemStyle: { borderRadius: 5 },
+                label: {
+                    color: '#ffffff',
+                    textBorderColor: 'transparent',
+                    textBorderWidth: 0
+                },
+                labelLine: {
+                    lineStyle: {
+                        color: '#ffffff'
+                    }
+                }
             }]
         }, true);
     }

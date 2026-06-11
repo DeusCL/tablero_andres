@@ -8,7 +8,7 @@
   --bg-input: #3e3d32;        /* Input background */
   --bg-input-hover: #49483e;  /* Input hover */
   
-  --text-main: #f8f8f2;       /* Editor foreground */
+  --text-main: #ffffff;       /* Editor foreground */
   --text-muted: #75715e;      /* Comments / Gray */
   
   --color-pink: #f92672;      /* Tag names / Pink */
@@ -375,12 +375,24 @@ dashboard-view {
 /* Charts Grid */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 1.5rem;
 }
 
 .full-width-chart {
+  grid-column: span 6;
+}
+
+.chart-span-2 {
   grid-column: span 2;
+}
+
+.chart-span-3 {
+  grid-column: span 3;
+}
+
+.chart-span-4 {
+  grid-column: span 4;
 }
 
 .chart-card {
