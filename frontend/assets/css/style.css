@@ -74,9 +74,13 @@ nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 4px;
   transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .sidebar-toggle-btn:hover {

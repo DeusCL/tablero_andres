@@ -42,10 +42,11 @@ export class AppNavbar extends HTMLElement {
             <nav>
                 <div class="nav-left">
                     ${showToggleBtn ? `
-                    <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Colapsar panel de navegación">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
-                            <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Mostrar/ocultar filtros">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                         </svg>
+                        <span>Filtros</span>
                     </button>
                     ` : ''}
                     <div class="logo">
