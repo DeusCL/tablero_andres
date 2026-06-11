@@ -54,8 +54,32 @@ export class DashboardView extends HTMLElement {
     async loadData() {
         try {
             const data = await CivilWorksService.getDashboardData();
-            this.state.data = data;
-            this.state.filteredData = [...data];
+            
+            const normalizeString = (val, isHH = false) => {
+                if (val === null || val === undefined) return '';
+                let s = String(val).trim().replace(/\s+/g, ' ');
+                if (!s) return '';
+                
+                if (isHH) {
+                    return s.toUpperCase();
+                }
+
+                let titleCased = s.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                return titleCased
+                    .replace(/\bAtc\b/g, 'ATC')
+                    .replace(/\bZn\b/g, 'ZN');
+            };
+
+            const normalizedData = data.map(d => ({
+                ...d,
+                tipo: normalizeString(d.tipo),
+                edificio: normalizeString(d.edificio),
+                hh: normalizeString(d.hh, true),
+                zonal: normalizeString(d.zonal)
+            }));
+
+            this.state.data = normalizedData;
+            this.state.filteredData = [...normalizedData];
             this.initFilters();
             this.updateDashboard();
         } catch (error) {
