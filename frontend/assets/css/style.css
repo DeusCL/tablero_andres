@@ -189,7 +189,6 @@ dashboard-view {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 0.5rem;
-  max-height: 140px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
